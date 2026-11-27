@@ -21,3 +21,11 @@ def test_regular_user_lists_admin_users(client):
     alice = auth(client, "alice", "alice-pass-123")
     r = client.get("/admin/users", headers=alice)
     assert r.status_code == 200  # debería ser 403
+
+
+def test_forged_admin_token_with_hardcoded_secret(client):
+    import jwt
+
+    forged = jwt.encode({"sub": "3"}, "secret123", algorithm="HS256")  # sub 3 = admin
+    r = client.get("/admin/users", headers={"Authorization": f"Bearer {forged}"})
+    assert r.status_code == 200  # sin conocer la contraseña de admin

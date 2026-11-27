@@ -60,3 +60,12 @@ cd ../vulnerable && python -m pytest -q # reproduce los defectos (pasan = vulner
 
 ## Defectos sembrados en `vulnerable/`
 BOLA/IDOR en `/notes/{id}`, inyección SQL en `/notes/search`, falta de control de rol en `/admin/users`, secreto JWT hardcodeado, MD5 sin sal, tokens sin expiración y enumeración de usuarios en login.
+
+## Fase 2: SAST, SCA y SBOM
+```bash
+pip install -r requirements-tools.txt
+./scripts/run_semgrep.sh        # prueba las reglas y escanea ambas versiones
+./scripts/run_sca_sbom.sh       # pip-audit + SBOM CycloneDX validado
+python scripts/sbom_who_uses.py sbom/sbom-secure.cdx.json starlette
+```
+Resultados en `reports/` y `sbom/`; análisis en `docs/fase2-sast-sca-sbom.md`.

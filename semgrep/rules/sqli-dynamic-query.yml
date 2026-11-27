@@ -1,0 +1,24 @@
+rules:
+  - id: appsec-lab.sqli-dynamic-query
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Se construye una consulta SQL con f-string, concatenación o format() y se
+      pasa a execute(). Usar parámetros (?) y pasar los valores como segundo argumento.
+    metadata:
+      cwe: "CWE-89"
+      asvs: "v5.0.0-1.2.4"
+    pattern-sources:
+      - pattern: f"...{$X}..."
+      - pattern: $S + $X
+      - pattern: $S.format(...)
+      - pattern: $S % $X
+    pattern-sinks:
+      - patterns:
+          - pattern-either:
+              - pattern: $CONN.execute($Q, ...)
+              - pattern: $CONN.executemany($Q, ...)
+              - pattern: $CONN.executescript($Q)
+              - pattern: $CUR.execute($Q, ...)
+          - focus-metavariable: $Q
