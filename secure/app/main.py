@@ -20,6 +20,15 @@ app = FastAPI(title="Notes API (secure)", version="1.0.0", lifespan=lifespan)
 bearer = HTTPBearer(auto_error=False)
 
 
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"  # ZAP 10049
+    response.headers["X-Content-Type-Options"] = "nosniff"  # ZAP 10021
+    response.headers["Cross-Origin-Resource-Policy"] = "same-origin"  # ZAP 90004
+    return response
+
+
 class LoginIn(BaseModel):
     username: str = Field(min_length=1, max_length=50)
     password: str = Field(min_length=1, max_length=128)

@@ -384,7 +384,7 @@
       "version": "1.45.2"
     },
     {
-      "bom-ref": "pip==25.1.1",
+      "bom-ref": "pip==24.0",
       "description": "The PyPA recommended tool for installing Python packages.",
       "externalReferences": [
         {
@@ -417,9 +417,9 @@
         }
       ],
       "name": "pip",
-      "purl": "pkg:pypi/pip@25.1.1",
+      "purl": "pkg:pypi/pip@24.0",
       "type": "library",
-      "version": "25.1.1"
+      "version": "24.0"
     },
     {
       "bom-ref": "pydantic==2.14.4",
@@ -875,7 +875,7 @@
       "ref": "opentelemetry-api==1.45.2"
     },
     {
-      "ref": "pip==25.1.1"
+      "ref": "pip==24.0"
     },
     {
       "dependsOn": [
@@ -944,7 +944,7 @@
     }
   ],
   "metadata": {
-    "timestamp": "2026-11-27T01:53:55.980710+00:00",
+    "timestamp": "2026-11-27T01:19:46.488369+00:00",
     "tools": {
       "components": [
         {
@@ -1048,7 +1048,7 @@
       ]
     }
   },
-  "serialNumber": "urn:uuid:fb4c7148-b77c-43f2-9533-1cb773fed31f",
+  "serialNumber": "urn:uuid:4708d9bc-04d5-4212-a05a-863561999752",
   "version": 1,
   "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
   "bomFormat": "CycloneDX",

@@ -1,0 +1,45 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- /home/seb/Downloads/appsec-api-lab/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/seb/Downloads/appsec-api-lab/secure
+configfile: pytest.ini
+testpaths: tests
+plugins: platformdirs-4.14.8, anyio-4.16.0
+collecting ... collected 28 items
+
+tests/test_security_controls.py::test_01_owner_can_read_own_note PASSED  [  3%]
+tests/test_security_controls.py::test_02_user_cannot_read_other_users_note PASSED [  7%]
+tests/test_security_controls.py::test_02b_nonexistent_note_is_404 PASSED [ 10%]
+tests/test_security_controls.py::test_03_no_token_is_401 PASSED          [ 14%]
+tests/test_security_controls.py::test_03b_tampered_token_is_401 PASSED   [ 17%]
+tests/test_security_controls.py::test_03c_expired_token_is_401 PASSED    [ 21%]
+tests/test_security_controls.py::test_03d_token_without_exp_is_401 PASSED [ 25%]
+tests/test_security_controls.py::test_03e_alg_none_token_is_401 PASSED   [ 28%]
+tests/test_security_controls.py::test_03f_login_error_does_not_reveal_which_part_failed PASSED [ 32%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload0] PASSED [ 35%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload1] PASSED [ 39%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload2] PASSED [ 42%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload3] PASSED [ 46%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload4] PASSED [ 50%]
+tests/test_security_controls.py::test_04b_non_numeric_id_is_422 PASSED   [ 53%]
+tests/test_security_controls.py::test_04c_search_length_limits_are_422[] PASSED [ 57%]
+tests/test_security_controls.py::test_04c_search_length_limits_are_422[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] PASSED [ 60%]
+tests/test_security_controls.py::test_04d_sql_injection_payload_is_treated_as_data PASSED [ 64%]
+tests/test_security_controls.py::test_04e_search_only_returns_own_notes PASSED [ 67%]
+tests/test_security_controls.py::test_05_admin_endpoint_by_role PASSED   [ 71%]
+tests/test_security_controls.py::test_06_user_can_create_and_list_own_note PASSED [ 75%]
+tests/test_security_controls.py::test_07_security_headers_present[/health-200] PASSED [ 78%]
+tests/test_security_controls.py::test_07_security_headers_present[/ruta-que-no-existe-404] PASSED [ 82%]
+tests/test_smoke.py::test_login_and_own_note PASSED                      [ 85%]
+tests/test_smoke.py::test_other_users_note_denied PASSED                 [ 89%]
+tests/test_smoke.py::test_no_token_is_401 PASSED                         [ 92%]
+tests/test_smoke.py::test_admin_endpoint_requires_admin PASSED           [ 96%]
+tests/test_smoke.py::test_search_injection_stays_scoped PASSED           [100%]
+
+=============================== warnings summary ===============================
+../.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 28 passed, 1 warning in 3.98s =========================

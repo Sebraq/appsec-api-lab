@@ -69,3 +69,10 @@ pip install -r requirements-tools.txt
 python scripts/sbom_who_uses.py sbom/sbom-secure.cdx.json starlette
 ```
 Resultados en `reports/` y `sbom/`; análisis en `docs/fase2-sast-sca-sbom.md`.
+
+## Fase 3: pruebas automatizadas, traza y ZAP
+```bash
+cd secure && APP_SECRET_KEY=$(openssl rand -hex 32) python -m pytest -v   # 23 pruebas de controles
+python ../scripts/trace_request.py                                        # traza de una solicitud
+cd .. && ./scripts/run_zap_baseline.sh && ./scripts/run_zap_api_passive.sh  # requiere Docker
+```
