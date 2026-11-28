@@ -72,7 +72,15 @@ Resultados en `reports/` y `sbom/`; análisis en `docs/fase2-sast-sca-sbom.md`.
 
 ## Fase 3: pruebas automatizadas, traza y ZAP
 ```bash
-cd secure && APP_SECRET_KEY=$(openssl rand -hex 32) python -m pytest -v   # 23 pruebas de controles
+cd secure && APP_SECRET_KEY=$(openssl rand -hex 32) python -m pytest -v   # suite de controles y regresión
 python ../scripts/trace_request.py                                        # traza de una solicitud
 cd .. && ./scripts/run_zap_baseline.sh && ./scripts/run_zap_api_passive.sh  # requiere Docker
 ```
+
+## Fase 4: remediación y retest
+```bash
+./scripts/run_before_after.sh        # misma reproducción contra vulnerable (antes) y secure (después)
+./scripts/run_regression_check.sh    # regresión: pasa en secure, las negativas fallan en vulnerable
+python scripts/function_diff.py get_note search_notes admin_list_users
+```
+Análisis en `docs/fase4-remediacion.md`; evidencias en `reports/remediation/`.

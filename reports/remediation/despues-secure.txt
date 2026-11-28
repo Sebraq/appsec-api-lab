@@ -1,0 +1,9 @@
+Objetivo: http://127.0.0.1:8000
+
+Defecto     Solicitud                                           HTTP  Observación                       Veredicto
+D1 BOLA     alice GET /notes/3 (nota de bob)                    403   sin contenido de bob              CORREGIDO
+D1 positiva alice GET /notes/1 (nota propia)                    200   uso legítimo                      FUNCIONA
+D2 SQLi     alice GET /notes/search?q=' OR 1=1 --               200   0 notas devueltas                 CORREGIDO
+D2 positiva alice GET /notes/search?q=compras                   200   1 nota propia                     FUNCIONA
+D3 BFLA     alice GET /admin/users                              403   acceso denegado                   CORREGIDO
+D4 JWT      GET /admin/users con token forjado                  401   token rechazado                   CORREGIDO

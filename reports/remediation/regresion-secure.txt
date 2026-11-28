@@ -1,0 +1,59 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- /home/seb/Downloads/appsec-api-lab/.venv/bin/python
+rootdir: /home/seb/Downloads/appsec-api-lab/secure
+configfile: pytest.ini
+testpaths: tests
+plugins: platformdirs-4.14.8, anyio-4.16.0
+collecting ... collected 39 items
+
+tests/test_regression_defects.py::test_d1_negative_no_note_of_another_owner_is_readable PASSED [  2%]
+tests/test_regression_defects.py::test_d1_positive_owner_reads_every_own_note PASSED [  5%]
+tests/test_regression_defects.py::test_d2_negative_payload_is_treated_as_text[' OR 1=1 --] PASSED [  7%]
+tests/test_regression_defects.py::test_d2_negative_payload_is_treated_as_text[%' OR '1'='1] PASSED [ 10%]
+tests/test_regression_defects.py::test_d2_negative_payload_is_treated_as_text[' UNION SELECT 1,username,role FROM users--] PASSED [ 12%]
+tests/test_regression_defects.py::test_d2_negative_payload_is_treated_as_text['; DROP TABLE notes; --] PASSED [ 15%]
+tests/test_regression_defects.py::test_d2_negative_tables_survive_the_drop_payload PASSED [ 17%]
+tests/test_regression_defects.py::test_d2_positive_legitimate_search_still_works PASSED [ 20%]
+tests/test_regression_defects.py::test_d3_negative_regular_user_cannot_list_users PASSED [ 23%]
+tests/test_regression_defects.py::test_d3_positive_admin_can_list_users PASSED [ 25%]
+tests/test_regression_defects.py::test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected PASSED [ 28%]
+tests/test_security_controls.py::test_01_owner_can_read_own_note PASSED  [ 30%]
+tests/test_security_controls.py::test_02_user_cannot_read_other_users_note PASSED [ 33%]
+tests/test_security_controls.py::test_02b_nonexistent_note_is_404 PASSED [ 35%]
+tests/test_security_controls.py::test_03_no_token_is_401 PASSED          [ 38%]
+tests/test_security_controls.py::test_03b_tampered_token_is_401 PASSED   [ 41%]
+tests/test_security_controls.py::test_03c_expired_token_is_401 PASSED    [ 43%]
+tests/test_security_controls.py::test_03d_token_without_exp_is_401 PASSED [ 46%]
+tests/test_security_controls.py::test_03e_alg_none_token_is_401 PASSED   [ 48%]
+tests/test_security_controls.py::test_03f_login_error_does_not_reveal_which_part_failed PASSED [ 51%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload0] PASSED [ 53%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload1] PASSED [ 56%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload2] PASSED [ 58%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload3] PASSED [ 61%]
+tests/test_security_controls.py::test_04_invalid_note_is_422[payload4] PASSED [ 64%]
+tests/test_security_controls.py::test_04b_non_numeric_id_is_422 PASSED   [ 66%]
+tests/test_security_controls.py::test_04c_search_length_limits_are_422[] PASSED [ 69%]
+tests/test_security_controls.py::test_04c_search_length_limits_are_422[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa] PASSED [ 71%]
+tests/test_security_controls.py::test_04d_sql_injection_payload_is_treated_as_data PASSED [ 74%]
+tests/test_security_controls.py::test_04e_search_only_returns_own_notes PASSED [ 76%]
+tests/test_security_controls.py::test_05_admin_endpoint_by_role PASSED   [ 79%]
+tests/test_security_controls.py::test_06_user_can_create_and_list_own_note PASSED [ 82%]
+tests/test_security_controls.py::test_07_security_headers_present[/health-200] PASSED [ 84%]
+tests/test_security_controls.py::test_07_security_headers_present[/ruta-que-no-existe-404] PASSED [ 87%]
+tests/test_smoke.py::test_login_and_own_note PASSED                      [ 89%]
+tests/test_smoke.py::test_other_users_note_denied PASSED                 [ 92%]
+tests/test_smoke.py::test_no_token_is_401 PASSED                         [ 94%]
+tests/test_smoke.py::test_admin_endpoint_requires_admin PASSED           [ 97%]
+tests/test_smoke.py::test_search_injection_stays_scoped PASSED           [100%]
+
+=============================== warnings summary ===============================
+../.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_regression_defects.py::test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 9 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 39 passed, 2 warnings in 5.60s ========================

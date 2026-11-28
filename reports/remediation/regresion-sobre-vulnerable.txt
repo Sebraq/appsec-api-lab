@@ -1,0 +1,405 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.4, pytest-9.2.0, pluggy-1.7.0 -- /home/seb/Downloads/appsec-api-lab/.venv/bin/python
+rootdir: /home/seb/Downloads/appsec-api-lab/vulnerable
+configfile: pytest.ini
+plugins: platformdirs-4.14.8, anyio-4.16.0
+collecting ... collected 11 items
+
+tests/test_regression_tmp.py::test_d1_negative_no_note_of_another_owner_is_readable FAILED [  9%]
+tests/test_regression_tmp.py::test_d1_positive_owner_reads_every_own_note PASSED [ 18%]
+tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[' OR 1=1 --] FAILED [ 27%]
+tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[%' OR '1'='1] FAILED [ 36%]
+tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[' UNION SELECT 1,username,role FROM users--] FAILED [ 45%]
+tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text['; DROP TABLE notes; --] FAILED [ 54%]
+tests/test_regression_tmp.py::test_d2_negative_tables_survive_the_drop_payload FAILED [ 63%]
+tests/test_regression_tmp.py::test_d2_positive_legitimate_search_still_works PASSED [ 72%]
+tests/test_regression_tmp.py::test_d3_negative_regular_user_cannot_list_users FAILED [ 81%]
+tests/test_regression_tmp.py::test_d3_positive_admin_can_list_users PASSED [ 90%]
+tests/test_regression_tmp.py::test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected FAILED [100%]
+
+=================================== FAILURES ===================================
+____________ test_d1_negative_no_note_of_another_owner_is_readable _____________
+
+client = <starlette.testclient.TestClient object at 0x7bf235583620>
+
+    def test_d1_negative_no_note_of_another_owner_is_readable(client):
+        """Entrada: alice pide TODAS las notas que no son suyas. Esperado: 403 en cada una."""
+        alice = auth(client, *ALICE)
+        foreign = {i: o for i, o in _all_note_ids(client).items() if o != "alice"}
+        assert len(foreign) == 2  # nota de bob y nota de admin
+        for note_id in foreign:
+>           assert client.get(f"/notes/{note_id}", headers=alice).status_code == 403
+E           AssertionError: assert 200 == 403
+E            +  where 200 = <Response [200 OK]>.status_code
+E            +    where <Response [200 OK]> = get('/notes/3', headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.iVJBYiIrUNxKMa56UEEeh3lkLCPVEOnSw9cRVBpd-eQ'})
+E            +      where get = <starlette.testclient.TestClient object at 0x7bf235583620>.get
+
+tests/test_regression_tmp.py:32: AssertionError
+___________ test_d2_negative_payload_is_treated_as_text[' OR 1=1 --] ___________
+
+client = <starlette.testclient.TestClient object at 0x7bf235296710>
+payload = "' OR 1=1 --"
+
+    @pytest.mark.parametrize("payload", SQLI_PAYLOADS)
+    def test_d2_negative_payload_is_treated_as_text(client, payload):
+        """Entrada: cargas típicas de SQLi. Esperado: 200, lista vacía, sin error 500."""
+        alice = auth(client, *ALICE)
+        r = client.get("/notes/search", params={"q": payload}, headers=alice)
+        assert r.status_code == 200
+>       assert r.json() == []
+E       AssertionError: assert [{'id': 1, 't...o ficticio)'}] == []
+E         
+E         Left contains 4 more items, first extra item: {'id': 1, 'title': 'Lista de compras', 'content': 'Leche, pan, café'}
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         - []
+E         + [
+E         +     {...
+E         
+E         ...Full output truncated, use '-vv' to show
+
+tests/test_regression_tmp.py:59: AssertionError
+__________ test_d2_negative_payload_is_treated_as_text[%' OR '1'='1] ___________
+
+client = <starlette.testclient.TestClient object at 0x7bf235420d60>
+payload = "%' OR '1'='1"
+
+    @pytest.mark.parametrize("payload", SQLI_PAYLOADS)
+    def test_d2_negative_payload_is_treated_as_text(client, payload):
+        """Entrada: cargas típicas de SQLi. Esperado: 200, lista vacía, sin error 500."""
+        alice = auth(client, *ALICE)
+        r = client.get("/notes/search", params={"q": payload}, headers=alice)
+        assert r.status_code == 200
+>       assert r.json() == []
+E       AssertionError: assert [{'id': 1, 't...laboratorio'}] == []
+E         
+E         Left contains 2 more items, first extra item: {'id': 1, 'title': 'Lista de compras', 'content': 'Leche, pan, café'}
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         - []
+E         + [
+E         +     {...
+E         
+E         ...Full output truncated, use '-vv' to show
+
+tests/test_regression_tmp.py:59: AssertionError
+_ test_d2_negative_payload_is_treated_as_text[' UNION SELECT 1,username,role FROM users--] _
+
+client = <starlette.testclient.TestClient object at 0x7bf235422520>
+payload = "' UNION SELECT 1,username,role FROM users--"
+
+    @pytest.mark.parametrize("payload", SQLI_PAYLOADS)
+    def test_d2_negative_payload_is_treated_as_text(client, payload):
+        """Entrada: cargas típicas de SQLi. Esperado: 200, lista vacía, sin error 500."""
+        alice = auth(client, *ALICE)
+        r = client.get("/notes/search", params={"q": payload}, headers=alice)
+        assert r.status_code == 200
+>       assert r.json() == []
+E       AssertionError: assert [{'id': 1, 't...laboratorio'}] == []
+E         
+E         Left contains 5 more items, first extra item: {'id': 1, 'title': 'Lista de compras', 'content': 'Leche, pan, café'}
+E         
+E         Full diff: (-: missing in left side, +: extra in left side)
+E         - []
+E         + [
+E         +     {...
+E         
+E         ...Full output truncated, use '-vv' to show
+
+tests/test_regression_tmp.py:59: AssertionError
+_____ test_d2_negative_payload_is_treated_as_text['; DROP TABLE notes; --] _____
+
+client = <starlette.testclient.TestClient object at 0x7bf235472210>
+payload = "'; DROP TABLE notes; --"
+
+    @pytest.mark.parametrize("payload", SQLI_PAYLOADS)
+    def test_d2_negative_payload_is_treated_as_text(client, payload):
+        """Entrada: cargas típicas de SQLi. Esperado: 200, lista vacía, sin error 500."""
+        alice = auth(client, *ALICE)
+>       r = client.get("/notes/search", params={"q": payload}, headers=alice)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_regression_tmp.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../.venv/lib/python3.14/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:518: in request
+    return super().request(
+../.venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_client.py:928: in send
+    raise exc
+../.venv/lib/python3.14/site-packages/httpx/_client.py:922: in send
+    response.read()
+../.venv/lib/python3.14/site-packages/httpx/_models.py:881: in read
+    self._content = b"".join(self.iter_bytes())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_models.py:897: in iter_bytes
+    for raw_bytes in self.iter_raw():
+                     ^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_models.py:951: in iter_raw
+    for raw_stream_bytes in self.stream:
+                            ^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_client.py:153: in __iter__
+    for chunk in self._stream:
+                 ^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:384: in iter_body
+    exit_stack.close()
+/usr/lib/python3.14/contextlib.py:627: in close
+    self.__exit__(None, None, None)
+/usr/lib/python3.14/contextlib.py:619: in __exit__
+    raise exc
+/usr/lib/python3.14/contextlib.py:604: in __exit__
+    if cb(*exc_details):
+       ^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:399: in close_app
+    raise exception
+../.venv/lib/python3.14/site-packages/anyio/from_thread.py:272: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:366: in run_app
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/applications.py:1224: in __call__
+    await super().__call__(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/_body_limit.py:80: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/routing.py:683: in __call__
+    await self.middleware_stack(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:2929: in app
+    await route.handle(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:1375: in handle
+    await super().handle(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/routing.py:289: in handle
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:175: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:161: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:762: in app
+    raw_response = await run_endpoint_function(
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:383: in run_endpoint_function
+    return await run_in_threadpool(
+../.venv/lib/python3.14/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+../.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:2779: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:1124: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q = "'; DROP TABLE notes; --", user = <sqlite3.Row object at 0x7bf2353119f0>
+conn = <sqlite3.Connection object at 0x7bf23530a980>
+
+    @app.get("/notes/search")
+    def search_notes(q: str, user=Depends(current_user), conn=Depends(db.get_db)):
+        # DEFECTO (inyección SQL): la entrada del cliente se concatena en la consulta
+        query = (
+            "SELECT id, title, content FROM notes "
+            f"WHERE owner_id = {user['id']} AND title LIKE '%{q}%'"
+        )
+>       rows = conn.execute(query).fetchall()
+               ^^^^^^^^^^^^^^^^^^^
+E       sqlite3.ProgrammingError: You can only execute one statement at a time.
+
+app/main.py:97: ProgrammingError
+_______________ test_d2_negative_tables_survive_the_drop_payload _______________
+
+client = <starlette.testclient.TestClient object at 0x7bf23554ef10>
+
+    def test_d2_negative_tables_survive_the_drop_payload(client):
+        """Entrada: payload DROP TABLE y luego lectura normal. Esperado: los datos siguen ahí."""
+        alice = auth(client, *ALICE)
+>       client.get("/notes/search", params={"q": "'; DROP TABLE notes; --"}, headers=alice)
+
+tests/test_regression_tmp.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../.venv/lib/python3.14/site-packages/httpx/_client.py:1053: in get
+    return self.request(
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:518: in request
+    return super().request(
+../.venv/lib/python3.14/site-packages/httpx/_client.py:825: in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_client.py:928: in send
+    raise exc
+../.venv/lib/python3.14/site-packages/httpx/_client.py:922: in send
+    response.read()
+../.venv/lib/python3.14/site-packages/httpx/_models.py:881: in read
+    self._content = b"".join(self.iter_bytes())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_models.py:897: in iter_bytes
+    for raw_bytes in self.iter_raw():
+                     ^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_models.py:951: in iter_raw
+    for raw_stream_bytes in self.stream:
+                            ^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/httpx/_client.py:153: in __iter__
+    for chunk in self._stream:
+                 ^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:384: in iter_body
+    exit_stack.close()
+/usr/lib/python3.14/contextlib.py:627: in close
+    self.__exit__(None, None, None)
+/usr/lib/python3.14/contextlib.py:619: in __exit__
+    raise exc
+/usr/lib/python3.14/contextlib.py:604: in __exit__
+    if cb(*exc_details):
+       ^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:399: in close_app
+    raise exception
+../.venv/lib/python3.14/site-packages/anyio/from_thread.py:272: in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/starlette/testclient.py:366: in run_app
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/applications.py:1224: in __call__
+    await super().__call__(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../.venv/lib/python3.14/site-packages/fastapi/telemetry/_asgi.py:151: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/_body_limit.py:80: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/routing.py:683: in __call__
+    await self.middleware_stack(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:2929: in app
+    await route.handle(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:1375: in handle
+    await super().handle(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/routing.py:289: in handle
+    await self.app(scope, receive, send)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:175: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../.venv/lib/python3.14/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:161: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:762: in app
+    raw_response = await run_endpoint_function(
+../.venv/lib/python3.14/site-packages/fastapi/routing.py:383: in run_endpoint_function
+    return await run_in_threadpool(
+../.venv/lib/python3.14/site-packages/starlette/concurrency.py:34: in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/anyio/to_thread.py:65: in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+../.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:2779: in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py:1124: in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+../.venv/lib/python3.14/site-packages/fastapi/telemetry/_api.py:244: in _run_sync_endpoint
+    return function(**arguments)
+           ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+q = "'; DROP TABLE notes; --", user = <sqlite3.Row object at 0x7bf2352ca680>
+conn = <sqlite3.Connection object at 0x7bf2352f71f0>
+
+    @app.get("/notes/search")
+    def search_notes(q: str, user=Depends(current_user), conn=Depends(db.get_db)):
+        # DEFECTO (inyección SQL): la entrada del cliente se concatena en la consulta
+        query = (
+            "SELECT id, title, content FROM notes "
+            f"WHERE owner_id = {user['id']} AND title LIKE '%{q}%'"
+        )
+>       rows = conn.execute(query).fetchall()
+               ^^^^^^^^^^^^^^^^^^^
+E       sqlite3.ProgrammingError: You can only execute one statement at a time.
+
+app/main.py:97: ProgrammingError
+_______________ test_d3_negative_regular_user_cannot_list_users ________________
+
+client = <starlette.testclient.TestClient object at 0x7bf235436360>
+
+    def test_d3_negative_regular_user_cannot_list_users(client):
+        alice = auth(client, *ALICE)
+>       assert client.get("/admin/users", headers=alice).status_code == 403
+E       AssertionError: assert 200 == 403
+E        +  where 200 = <Response [200 OK]>.status_code
+E        +    where <Response [200 OK]> = get('/admin/users', headers={'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIn0.iVJBYiIrUNxKMa56UEEeh3lkLCPVEOnSw9cRVBpd-eQ'})
+E        +      where get = <starlette.testclient.TestClient object at 0x7bf235436360>.get
+
+tests/test_regression_tmp.py:80: AssertionError
+_____ test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected ______
+
+client = <starlette.testclient.TestClient object at 0x7bf235435370>
+
+    def test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected(client):
+        forged = jwt.encode({"sub": "3"}, "secret123", algorithm="HS256")
+        r = client.get("/admin/users", headers={"Authorization": f"Bearer {forged}"})
+>       assert r.status_code == 401
+E       assert 200 == 401
+E        +  where 200 = <Response [200 OK]>.status_code
+
+tests/test_regression_tmp.py:92: AssertionError
+=============================== warnings summary ===============================
+../.venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/test_regression_tmp.py: 11 warnings
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 9 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/test_regression_tmp.py: 11 warnings
+  /home/seb/Downloads/appsec-api-lab/.venv/lib/python3.14/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 9 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_regression_tmp.py::test_d1_negative_no_note_of_another_owner_is_readable
+FAILED tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[' OR 1=1 --]
+FAILED tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[%' OR '1'='1]
+FAILED tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text[' UNION SELECT 1,username,role FROM users--]
+FAILED tests/test_regression_tmp.py::test_d2_negative_payload_is_treated_as_text['; DROP TABLE notes; --]
+FAILED tests/test_regression_tmp.py::test_d2_negative_tables_survive_the_drop_payload
+FAILED tests/test_regression_tmp.py::test_d3_negative_regular_user_cannot_list_users
+FAILED tests/test_regression_tmp.py::test_d4_negative_token_signed_with_old_hardcoded_secret_is_rejected
+=================== 8 failed, 3 passed, 23 warnings in 0.54s ===================

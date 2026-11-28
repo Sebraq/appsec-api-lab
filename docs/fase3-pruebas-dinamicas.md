@@ -85,25 +85,29 @@ Resultado (`reports/zap/zap-api-passive-console.txt`, ejecución propia del 27 d
 
 **Las reglas activas en PASS no son evidencia.** La consola lista como PASS reglas como *SQL Injection* o *Cross Site Scripting*. Con `-S` el escaneo activo se omite, así que esas reglas no se ejecutaron; la lista solo indica que no generaron alertas. La inyección SQL se verifica con las pruebas pytest, no con este reporte.
 
-**Rutas alcanzadas.** Para listarlas con el código de respuesta de cada una, usar el registro de la API durante el escaneo:
+**Rutas alcanzadas.** Salida del registro de la API durante la última corrida (`reports/zap/api-openapi.log`, que se sobrescribe en cada ejecución):
 
-```bash
-grep -oE '"(GET|POST|PUT|DELETE|HEAD|OPTIONS) [^ ]+ HTTP/1.1" [0-9]+' reports/zap/api-openapi.log | sort | uniq -c
-```
+| Método y ruta | Respuesta | Lectura |
+|---|---|---|
+| `GET /health` | 200 | Pública (aparece dos veces; probablemente una es la comprobación del propio script) |
+| `GET /openapi.json` | 200 | Pública, definición que ZAP importó |
+| `POST /auth/login` | 401 | ZAP envió credenciales de ejemplo, rechazadas como corresponde |
+| `GET /me`, `GET /notes`, `POST /notes`, `GET /notes/10`, `GET /notes/search?q=q`, `GET /admin/users` | 401 | Protegidas: sin token solo se ve el rechazo |
 
-**PENDIENTE: pegar aquí la salida de ese comando** (ruta, método y código) y repetir el escaneo después de las cabeceras nuevas para confirmar que las dos advertencias desaparecen (ver "antes y después" abajo).
+Son 9 rutas distintas con 10 solicitudes. Las advertencias de cabeceras solo aparecen en las dos rutas que respondieron 200.
 
 ### 3.3 Antes y después de las cabeceras
 
-Antes de repetir el escaneo, guardar la corrida anterior:
+Se agregaron `X-Content-Type-Options` y `Cross-Origin-Resource-Policy` al middleware `security_headers` y la prueba `test_07` las verifica.
+
+La corrida de las 22:14 del 27 de noviembre **repitió las dos advertencias** en `/health` y `/openapi.json`. Una consulta HTTP directa contra la versión actual del código sí devuelve las tres cabeceras, así que esa corrida se hizo con archivos de una versión anterior o con otro proceso atendiendo el puerto 8000.
+
+**PENDIENTE: repetir la corrida con la versión actual** y reemplazar este párrafo con el resultado (las dos advertencias deberían desaparecer). Comprobaciones previas:
 
 ```bash
-cd reports/zap
-for f in zap-api-passive-secure.html zap-api-passive-secure.json zap-api-passive-secure.md zap-api-passive-console.txt; do mv "$f" "${f%.*}-antes.${f##*.}"; done
-cd ../.. && ./scripts/run_zap_api_passive.sh
+grep -c "X-Content-Type-Options" secure/app/main.py   # debe dar 1 o más
+ss -ltnp | grep :8000                                # no debe haber nada escuchando
 ```
-
-**PENDIENTE: comparar** las advertencias de la corrida anterior (2) contra la nueva.
 
 ### 3.4 Limitaciones de cobertura
 

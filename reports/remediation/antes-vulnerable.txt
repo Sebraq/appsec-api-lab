@@ -1,0 +1,9 @@
+Objetivo: http://127.0.0.1:9000
+
+Defecto     Solicitud                                           HTTP  Observación                       Veredicto
+D1 BOLA     alice GET /notes/3 (nota de bob)                    200   devuelve el contenido de bob      VULNERABLE
+D1 positiva alice GET /notes/1 (nota propia)                    200   uso legítimo                      FUNCIONA
+D2 SQLi     alice GET /notes/search?q=' OR 1=1 --               200   4 notas, incluye notas ajenas     VULNERABLE
+D2 positiva alice GET /notes/search?q=compras                   200   1 nota propia                     FUNCIONA
+D3 BFLA     alice GET /admin/users                              200   lista usuarios                    VULNERABLE
+D4 JWT      GET /admin/users con token forjado                  200   acepta el token forjado           VULNERABLE

@@ -1,0 +1,44 @@
+--- vulnerable/app/main.py::get_note
++++ secure/app/main.py::get_note
+@@ -5,5 +5,6 @@
+     ).fetchone()
+     if note is None:
+         raise HTTPException(404, "Nota no encontrada")
+-    # DEFECTO (BOLA/IDOR): no se verifica que note.owner_id == user.id
++    if note["owner_id"] != user["id"]:
++        raise HTTPException(403, "No tienes acceso a este recurso")
+     return dict(note)
+
+--- vulnerable/app/main.py::search_notes
++++ secure/app/main.py::search_notes
+@@ -1,9 +1,11 @@
+ @app.get("/notes/search")
+-def search_notes(q: str, user=Depends(current_user), conn=Depends(db.get_db)):
+-    # DEFECTO (inyección SQL): la entrada del cliente se concatena en la consulta
+-    query = (
+-        "SELECT id, title, content FROM notes "
+-        f"WHERE owner_id = {user['id']} AND title LIKE '%{q}%'"
+-    )
+-    rows = conn.execute(query).fetchall()
++def search_notes(
++    q: str = Query(min_length=1, max_length=50),
++    user=Depends(current_user),
++    conn=Depends(db.get_db),
++):
++    rows = conn.execute(
++        "SELECT id, title, content FROM notes WHERE owner_id = ? AND title LIKE ?",
++        (user["id"], f"%{q}%"),
++    ).fetchall()
+     return [dict(r) for r in rows]
+
+--- vulnerable/app/main.py::admin_list_users
++++ secure/app/main.py::admin_list_users
+@@ -1,5 +1,4 @@
+ @app.get("/admin/users")
+-def admin_list_users(user=Depends(current_user), conn=Depends(db.get_db)):
+-    # DEFECTO (autorización por función): cualquier usuario autenticado accede
+-    rows = conn.execute("SELECT id, username, role, password_hash FROM users").fetchall()
++def admin_list_users(_=Depends(require_admin), conn=Depends(db.get_db)):
++    rows = conn.execute("SELECT id, username, role FROM users").fetchall()
+     return [dict(r) for r in rows]
+
